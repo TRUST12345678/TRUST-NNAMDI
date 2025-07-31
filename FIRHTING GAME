@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NUMBER3 Fighting Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #222; color: #eee; text-align: center; }
+    #game-box { max-width: 400px; margin: 40px auto; background: #333; padding: 30px; border-radius: 12px; }
+    button { margin: 0 10px; padding: 10px 20px; font-size: 16px; }
+    .health-bar { height: 20px; background: #444; border-radius: 10px; margin: 10px 0; }
+    .health { height: 100%; background: #4caf50; border-radius: 10px; width: 100%; transition: width 0.4s;}
+    .log { background: #111; padding: 10px; min-height: 60px; margin-top: 15px; border-radius: 8px; }
+    .controls { margin: 18px 0 10px 0; }
+    .key { background: #222; color: #4caf50; border: 1px solid #4caf50; border-radius: 4px; padding: 3px 8px; font-weight: bold;}
+  </style>
+</head>
+<body>
+  <div id="game-box">
+    <h1>NUMBER3 Fighting Game</h1>
+    <div>
+      <h2>Your Health</h2>
+      <div class="health-bar"><div id="player-health" class="health"></div></div>
+      <h2>Computer Health</h2>
+      <div class="health-bar"><div id="cpu-health" class="health"></div></div>
+    </div>
+    <div class="controls">
+      <b>Controls:</b>
+      <span class="key">A</span> Punch &nbsp;
+      <span class="key">S</span> Kick &nbsp;
+      <span class="key">D</span> Defend
+    </div>
+    <div class="log" id="log"></div>
+    <button onclick="resetGame()" style="margin-top:20px;">Restart Game</button>
+  </div>
+  <script>
+    let playerHP = 30, cpuHP = 30;
+    let playerDefend = false, cpuDefend = false;
+    const logDiv = document.getElementById('log');
+
+    function updateHealth() {
+      document.getElementById('player-health').style.width = (playerHP/30*100) + '%';
+      document.getElementById('cpu-health').style.width = (cpuHP/30*100) + '%';
+    }
+
+    function log(text) {
+      logDiv.innerHTML = text;
+    }
+
+    function cpuAction() {
+      const actions = ['punch', 'kick', 'defend'];
+      return actions[Math.floor(Math.random()*3)];
+    }
+
+    function playerAction(action) {
+      if (playerHP <= 0 || cpuHP <= 0) return;
+      let cpuAct = cpuAction();
+      let msg = `<b>You:</b> ${capitalize(action)}<br><b>Computer:</b> ${capitalize(cpuAct)}<br>`;
+      let playerDmg = 0, cpuDmg = 0;
+      playerDefend = (action === 'defend');
+      cpuDefend = (cpuAct === 'defend');
+
+      // Resolve actions
+      if (action === 'punch') playerDmg = 5;
+      if (action === 'kick') playerDmg = 7;
+      if (cpuAct === 'punch') cpuDmg = 5;
+      if (cpuAct === 'kick') cpuDmg = 7;
+
+      if (cpuDefend) playerDmg = Math.floor(playerDmg / 2);
+      if (playerDefend) cpuDmg = Math.floor(cpuDmg / 2);
+
+      cpuHP -= playerDmg;
+      playerHP -= cpuDmg;
+
+      cpuHP = Math.max(cpuHP, 0);
+      playerHP = Math.max(playerHP, 0);
+
+      msg += `<br>You deal <b>${playerDmg}</b> damage. Computer deals <b>${cpuDmg}</b> damage.`;
+      if (playerHP <= 0 && cpuHP <= 0) msg += `<br><b>It's a draw!</b>`;
+      else if (playerHP <= 0) msg += `<br><b>You lost!</b>`;
+      else if (cpuHP <= 0) msg += `<br><b>You win!</b>`;
+
+      log(msg);
+      updateHealth();
+    }
+
+    function resetGame() {
+      playerHP = 30;
+      cpuHP = 30;
+      updateHealth();
+      log('Game restarted! Press A (Punch), S (Kick) or D (Defend) to play.');
+    }
+
+    function capitalize(str) {
+      return str[0].toUpperCase() + str.slice(1);
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', function(e) {
+      if (playerHP <= 0 || cpuHP <= 0) return;
+      if (e.key === 'a' || e.key === 'A') playerAction('punch');
+      if (e.key === 's' || e.key === 'S') playerAction('kick');
+      if (e.key === 'd' || e.key === 'D') playerAction('defend');
+    });
+
+    // Initialize
+    updateHealth();
+    log('Welcome! Press A (Punch), S (Kick) or D (Defend) to play.');
+  </script>
+</body>
+</html>
